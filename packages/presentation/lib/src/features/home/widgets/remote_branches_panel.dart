@@ -1,7 +1,8 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
 import 'package:git_pilot_presentation/orient_ui_widgets/info_banner.dart';
 import 'package:git_pilot_presentation/orient_ui_widgets/spinner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/tile.dart';
 import 'package:git_pilot_presentation/style.dart';
 
 import '../cubit/workspace_cubit.dart';
@@ -28,30 +29,19 @@ class RemoteBranchesPanel extends StatelessWidget {
     }
 
     if (tabState.remoteBranches.isEmpty) {
-      return Center(
-        child: Text(
-          'No remote branches found.',
-          style: context.typography.body.muted(context),
-        ),
-      );
+      return Center(child: Text('No remote branches found.', style: context.typography.body.muted(context)));
     }
 
     return ListView.separated(
       itemCount: tabState.remoteBranches.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 0),
       itemBuilder: (BuildContext context, int index) {
         final RemoteBranchRef branch = tabState.remoteBranches[index];
 
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: style.colors.background,
-            borderRadius: BorderRadius.circular(Style.radii.medium),
-            border: Border.all(color: style.colors.borderSubtle),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Text(branch.name, style: context.typography.body),
-          ),
+        return Tile(
+          title: branch.name,
+          leading: Icon(Icons.abc, color: style.colors.mutedForeground),
+          variant: .simple,
         );
       },
     );

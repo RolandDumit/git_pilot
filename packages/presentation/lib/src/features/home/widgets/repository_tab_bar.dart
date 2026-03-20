@@ -21,29 +21,61 @@ class RepositoryTabBar extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: style.colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(Style.radii.large),
+        borderRadius: BorderRadius.circular(Style.radii.small),
         border: Border.all(color: style.colors.border),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(8),
+      child: SizedBox(
+        height: 60,
+        width: 500,
         child: Row(
-          children: List<Widget>.generate(openRepositories.length, (int index) {
-            final SavedRepository repository = openRepositories[index];
-            final bool isSelected = repository.id == state.session.selectedRepositoryId;
+          children: [
+            ListView.separated(
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.all(8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemCount: openRepositories.length,
+              itemBuilder: (_, index) {
+                final SavedRepository repository = openRepositories[index];
+                final bool isSelected = repository.id == state.session.selectedRepositoryId;
 
-            return Padding(
-              padding: EdgeInsets.only(right: index == openRepositories.length - 1 ? 0 : 8),
-              child: RepositoryTab(
-                repository: repository,
-                isSelected: isSelected,
-                onTap: () => cubit.selectRepository(repository.id),
-                onClose: () => cubit.closeRepository(repository.id),
-              ),
-            );
-          }),
+                return RepositoryTab(
+                  repository: repository,
+                  isSelected: isSelected,
+                  onTap: () => cubit.selectRepository(repository.id),
+                  onClose: () => cubit.closeRepository(repository.id),
+                );
+              },
+            ),
+            TappableIcon(
+              icon: Icon(Icons.add),
+              onPressed: cubit.openLocalRepository,
+              tooltip: 'Open local repository',
+              size: 32,
+            ),
+          ],
         ),
       ),
+      // SingleChildScrollView(
+      //   scrollDirection: Axis.horizontal,
+      //   padding: const EdgeInsets.all(8),
+      //   child: Row(
+      //     children: List<Widget>.generate(openRepositories.length, (int index) {
+      //       final SavedRepository repository = openRepositories[index];
+      //       final bool isSelected = repository.id == state.session.selectedRepositoryId;
+
+      //       return Padding(
+      //         padding: EdgeInsets.only(right: index == openRepositories.length - 1 ? 0 : 8),
+      //         child: RepositoryTab(
+      //           repository: repository,
+      //           isSelected: isSelected,
+      //           onTap: () => cubit.selectRepository(repository.id),
+      //           onClose: () => cubit.closeRepository(repository.id),
+      //         ),
+      //       );
+      //     }),
+      //   ),
+      // ),
     );
   }
 }
@@ -69,16 +101,16 @@ class RepositoryTab extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: isSelected ? style.colors.background : style.colors.navigation.railBackground,
-        borderRadius: BorderRadius.circular(Style.radii.medium),
-        border: Border.all(color: isSelected ? style.colors.border : style.colors.borderSubtle),
+        borderRadius: .circular(Style.radii.small),
+        border: .all(color: isSelected ? style.colors.border : style.colors.borderSubtle),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           GestureDetector(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const .symmetric(horizontal: 14, vertical: 10),
               child: Text(
                 repository.displayName,
                 maxLines: 1,

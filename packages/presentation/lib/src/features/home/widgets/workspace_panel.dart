@@ -14,19 +14,19 @@ class WorkspacePanel extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: style.colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(Style.radii.large),
+        borderRadius: BorderRadius.circular(Style.radii.small),
         border: Border.all(color: style.colors.border),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: context.typography.title),
-            const SizedBox(height: 16),
-            Expanded(child: child),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const .only(left: 4, top: 4),
+            child: Text(title, style: context.typography.subtitle),
+          ),
+          const SizedBox(height: 16),
+          Expanded(child: child),
+        ],
       ),
     );
   }

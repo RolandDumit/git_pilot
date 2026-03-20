@@ -1,17 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
 import 'package:git_pilot_presentation/orient_ui_widgets/info_banner.dart';
 import 'package:git_pilot_presentation/orient_ui_widgets/spinner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/tile.dart';
 import 'package:git_pilot_presentation/style.dart';
 
 import '../cubit/workspace_cubit.dart';
 
 class RepositoryTreePanel extends StatelessWidget {
-  const RepositoryTreePanel({
-    super.key,
-    required this.tabState,
-    required this.onToggleDirectory,
-  });
+  const RepositoryTreePanel({super.key, required this.tabState, required this.onToggleDirectory});
 
   final RepositoryTabState tabState;
   final ValueChanged<RepositoryTreeNode> onToggleDirectory;
@@ -33,23 +31,14 @@ class RepositoryTreePanel extends StatelessWidget {
     }
 
     if (tabState.rootNodes.isEmpty) {
-      return Center(
-        child: Text(
-          'Repository tree is empty.',
-          style: context.typography.body.muted(context),
-        ),
-      );
+      return Center(child: Text('Repository tree is empty.', style: context.typography.body.muted(context)));
     }
 
     return ListView(
       children: tabState.rootNodes
           .map(
-            (RepositoryTreeNode node) => RepositoryTreeNodeView(
-              node: node,
-              depth: 0,
-              tabState: tabState,
-              onToggleDirectory: onToggleDirectory,
-            ),
+            (RepositoryTreeNode node) =>
+                RepositoryTreeNodeView(node: node, depth: 0, tabState: tabState, onToggleDirectory: onToggleDirectory),
           )
           .toList(growable: false),
     );
@@ -73,58 +62,28 @@ class RepositoryTreeNodeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Style style = Style.of(context);
-    final bool isExpanded = tabState.expandedDirectoryPaths.contains(
-      node.relativePath,
-    );
-    final bool isLoading = tabState.loadingDirectoryPaths.contains(
-      node.relativePath,
-    );
+    final bool isExpanded = tabState.expandedDirectoryPaths.contains(node.relativePath);
+    final bool isLoading = tabState.loadingDirectoryPaths.contains(node.relativePath);
     final List<RepositoryTreeNode> children =
-        tabState.childNodesByParentPath[node.relativePath] ??
-        const <RepositoryTreeNode>[];
+        tabState.childNodesByParentPath[node.relativePath] ?? const <RepositoryTreeNode>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: node.isDirectory ? () => onToggleDirectory(node) : null,
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: EdgeInsets.only(
-              left: 12 + (depth * 20),
-              right: 12,
-              top: 10,
-              bottom: 10,
-            ),
-            decoration: BoxDecoration(
-              color: style.colors.background,
-              borderRadius: BorderRadius.circular(Style.radii.medium),
-              border: Border.all(color: style.colors.borderSubtle),
-            ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 18,
-                  child: Text(
-                    node.isDirectory ? (isExpanded ? 'v' : '>') : '-',
-                    style: context.typography.bodySmall.withColor(
-                      style.colors.mutedForeground,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(node.name, style: context.typography.body),
-                ),
-                if (isLoading)
-                  Spinner(color: style.colors.mutedForeground)
-                else if (node.isDirectory && node.hasChildren)
-                  Text(
-                    '${children.length}',
-                    style: context.typography.caption.muted(context),
-                  ),
-              ],
+        Tile(
+          title: node.name,
+          leading: Padding(
+            padding: EdgeInsets.only(left: 12 + (depth * 20)),
+            child: Icon(
+              node.isDirectory ? (isExpanded ? Icons.folder_open : Icons.folder) : Icons.insert_drive_file,
+              color: style.colors.mutedForeground,
+              size: 16,
             ),
           ),
+          trailing: isLoading
+              ? SizedBox(width: 12, height: 12, child: Spinner(color: style.colors.mutedForeground))
+              : null,
+          onTap: node.isDirectory ? () => onToggleDirectory(node) : null,
         ),
         if (isExpanded)
           ...children.map(
