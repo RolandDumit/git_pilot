@@ -165,7 +165,7 @@ class _PickerState<T> extends State<Picker<T>> {
     return CompositedTransformTarget(
       link: _layerLink,
       child: MouseRegion(
-        cursor: SystemMouseCursors.click,
+        cursor: MouseCursor.defer,
         child: GestureDetector(
           key: _triggerKey,
           onTap: _toggle,
@@ -236,7 +236,7 @@ class _PickerItemState extends State<_PickerItem> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: MouseCursor.defer,
       onEnter: (_) {
         setState(() {
           _isHovered = true;

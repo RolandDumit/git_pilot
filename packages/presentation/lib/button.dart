@@ -141,9 +141,7 @@ class _ButtonState extends State<Button> with SingleTickerProviderStateMixin {
           onExit: (_) {
             if (!isDisabled) setState(() => _isHovered = false);
           },
-          cursor: isDisabled
-              ? SystemMouseCursors.basic
-              : SystemMouseCursors.click,
+          cursor: MouseCursor.defer,
           child: GestureDetector(
             onTap: isDisabled ? null : widget.onPressed,
             onTapDown: isDisabled

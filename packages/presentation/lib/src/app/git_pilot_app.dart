@@ -58,6 +58,17 @@ class GitPilotApp extends StatelessWidget {
             brightness: Brightness.dark,
             scaffoldBackgroundColor: const Color(0xFF09090B),
           ),
+          builder: (BuildContext context, Widget? child) {
+            final Style style = Style.of(context);
+
+            return DefaultTextStyle(
+              style: style.typography.body,
+              child: IconTheme(
+                data: IconThemeData(color: style.colors.foreground),
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+          },
           home: const WorkspacePage(),
         ),
       ),
