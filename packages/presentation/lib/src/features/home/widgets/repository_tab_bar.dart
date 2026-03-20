@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/tappable_icon.dart';
 import 'package:git_pilot_presentation/style.dart';
 
 import '../cubit/workspace_cubit.dart';
@@ -14,8 +16,7 @@ class RepositoryTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final Style style = Style.of(context);
     final WorkspaceCubit cubit = context.read<WorkspaceCubit>();
-    final List<SavedRepository> openRepositories =
-        state.session.openRepositories;
+    final List<SavedRepository> openRepositories = state.session.openRepositories;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -27,22 +28,20 @@ class RepositoryTabBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.all(8),
         child: Row(
-          children: openRepositories
-              .map((SavedRepository repository) {
-                final bool isSelected =
-                    repository.id == state.session.selectedRepositoryId;
+          children: List<Widget>.generate(openRepositories.length, (int index) {
+            final SavedRepository repository = openRepositories[index];
+            final bool isSelected = repository.id == state.session.selectedRepositoryId;
 
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: RepositoryTab(
-                    repository: repository,
-                    isSelected: isSelected,
-                    onTap: () => cubit.selectRepository(repository.id),
-                    onClose: () => cubit.closeRepository(repository.id),
-                  ),
-                );
-              })
-              .toList(growable: false),
+            return Padding(
+              padding: EdgeInsets.only(right: index == openRepositories.length - 1 ? 0 : 8),
+              child: RepositoryTab(
+                repository: repository,
+                isSelected: isSelected,
+                onTap: () => cubit.selectRepository(repository.id),
+                onClose: () => cubit.closeRepository(repository.id),
+              ),
+            );
+          }),
         ),
       ),
     );
@@ -69,13 +68,9 @@ class RepositoryTab extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isSelected
-            ? style.colors.background
-            : style.colors.navigation.railBackground,
+        color: isSelected ? style.colors.background : style.colors.navigation.railBackground,
         borderRadius: BorderRadius.circular(Style.radii.medium),
-        border: Border.all(
-          color: isSelected ? style.colors.border : style.colors.borderSubtle,
-        ),
+        border: Border.all(color: isSelected ? style.colors.border : style.colors.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -83,38 +78,22 @@ class RepositoryTab extends StatelessWidget {
           GestureDetector(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    repository.displayName,
-                    style: context.typography.body.w600,
-                  ),
-                  const SizedBox(height: 4),
-                  SizedBox(
-                    width: 180,
-                    child: Text(
-                      repository.rootPath,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.typography.caption.muted(context),
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Text(
+                repository.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.body.w600,
               ),
             ),
           ),
-          GestureDetector(
-            onTap: onClose,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Text(
-                'x',
-                style: context.typography.body.withColor(
-                  style.colors.mutedForeground,
-                ),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: TappableIcon(
+              onPressed: onClose,
+              size: 32,
+              tooltip: 'Close ${repository.displayName}',
+              icon: const Icon(Icons.close_rounded, size: 16),
             ),
           ),
         ],

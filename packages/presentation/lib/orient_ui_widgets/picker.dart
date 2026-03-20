@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'style.dart';
+import '../style.dart';
 
 class Picker<T> extends StatefulWidget {
   final String? label;

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:git_pilot_presentation/info_banner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/info_banner.dart';
 
 class WorkspaceFailureView extends StatelessWidget {
   const WorkspaceFailureView({super.key, required this.failureMessage});

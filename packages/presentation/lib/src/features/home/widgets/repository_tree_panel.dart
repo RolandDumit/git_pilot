@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
-import 'package:git_pilot_presentation/info_banner.dart';
-import 'package:git_pilot_presentation/spinner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/info_banner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/spinner.dart';
 import 'package:git_pilot_presentation/style.dart';
 
 import '../cubit/workspace_cubit.dart';

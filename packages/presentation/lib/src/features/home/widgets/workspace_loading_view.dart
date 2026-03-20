@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:git_pilot_presentation/spinner.dart';
+import 'package:git_pilot_presentation/orient_ui_widgets/spinner.dart';
 import 'package:git_pilot_presentation/style.dart';
 
 class WorkspaceLoadingView extends StatelessWidget {
