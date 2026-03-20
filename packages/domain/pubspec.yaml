@@ -1,0 +1,14 @@
+name: git_pilot_domain
+description: Domain layer contracts and use cases for Git Pilot.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  git_pilot_core:
+    path: ../core
+
+dev_dependencies:
+  lints: ^6.0.0

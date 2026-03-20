@@ -1,0 +1,10 @@
+name: git_pilot_core
+description: Shared cross-cutting types for Git Pilot.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.1
+
+dev_dependencies:
+  lints: ^6.0.0
