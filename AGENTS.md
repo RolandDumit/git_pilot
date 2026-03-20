@@ -38,6 +38,7 @@ Suggested layers:
 - Keep UI code independent from Git execution details.
 - Use `orient_ui` as the primary source for app theming and reusable UI widgets in this project.
 - Prefer building new screens and shared components with `orient_ui` primitives instead of introducing parallel styling or widget systems.
+- For each presentation feature, create a `widgets/` folder inside that feature and place page-specific supporting widgets there so page files stay concise and focused on composition.
 - Prefer feature-oriented organization when the app grows.
 - Make dependencies injectable so BLoCs, use cases, and process-backed services remain testable.
 - Add tests around use cases, repository behavior, and BLoC state transitions.

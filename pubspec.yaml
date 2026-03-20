@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  file_selector: ^1.1.0
   flutter:
     sdk: flutter
   git_pilot_data:
@@ -36,6 +37,8 @@ dependencies:
     path: packages/domain
   git_pilot_presentation:
     path: packages/presentation
+  path: ^1.9.1
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

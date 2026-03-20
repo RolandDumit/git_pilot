@@ -1,16 +1,26 @@
+import 'dart:io';
+
 import 'package:process/process.dart';
 
-final class GitCommandRunner {
-  GitCommandRunner({ProcessManager? processManager})
+abstract interface class GitCommandRunner {
+  Future<GitCommandResult> run(
+    List<String> arguments, {
+    String? workingDirectory,
+  });
+}
+
+final class ProcessGitCommandRunner implements GitCommandRunner {
+  ProcessGitCommandRunner({ProcessManager? processManager})
     : _processManager = processManager ?? LocalProcessManager();
 
   final ProcessManager _processManager;
 
+  @override
   Future<GitCommandResult> run(
     List<String> arguments, {
     String? workingDirectory,
   }) async {
-    final result = await _processManager.run(<String>[
+    final ProcessResult result = await _processManager.run(<String>[
       'git',
       ...arguments,
     ], workingDirectory: workingDirectory);

@@ -1,2 +1,7 @@
 export 'src/datasources/git_command_runner.dart';
-export 'src/repositories/local_git_repository_catalog.dart';
+export 'src/datasources/git_remote_branches_data_source.dart';
+export 'src/datasources/git_repository_resolver_data_source.dart';
+export 'src/datasources/repository_file_tree_data_source.dart';
+export 'src/datasources/workspace_session_local_data_source.dart';
+export 'src/repositories/local_git_repository_explorer.dart';
+export 'src/repositories/local_workspace_session_repository.dart';

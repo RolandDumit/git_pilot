@@ -12,6 +12,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   git_pilot_domain:
     path: ../domain
+  orient_ui: ^0.7.0
 
 dev_dependencies:
   flutter_test:

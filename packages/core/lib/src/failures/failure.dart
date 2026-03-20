@@ -14,3 +14,11 @@ final class UnexpectedFailure extends Failure {
 final class GitCommandFailure extends Failure {
   const GitCommandFailure(super.message);
 }
+
+final class StorageFailure extends Failure {
+  const StorageFailure(super.message);
+}
+
+final class ValidationFailure extends Failure {
+  const ValidationFailure(super.message);
+}
