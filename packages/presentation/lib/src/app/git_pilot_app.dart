@@ -7,7 +7,7 @@ import '../features/home/cubit/workspace_cubit.dart';
 import '../features/home/view/workspace_page.dart';
 import '../services/local_repository_picker.dart';
 
-class GitPilotApp extends StatelessWidget {
+class GitPilotApp extends StatefulWidget {
   const GitPilotApp({
     super.key,
     required this.loadWorkspaceSession,
@@ -30,26 +30,61 @@ class GitPilotApp extends StatelessWidget {
   final LocalRepositoryPicker localRepositoryPicker;
 
   @override
-  Widget build(BuildContext context) {
-    final Brightness platformBrightness =
+  State<GitPilotApp> createState() => _GitPilotAppState();
+}
+
+class _GitPilotAppState extends State<GitPilotApp> with WidgetsBindingObserver {
+  late Brightness _platformBrightness;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _platformBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    final Brightness nextBrightness =
         WidgetsBinding.instance.platformDispatcher.platformBrightness;
 
+    if (nextBrightness == _platformBrightness) {
+      return;
+    }
+
+    setState(() {
+      _platformBrightness = nextBrightness;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = _platformBrightness == Brightness.dark;
+
     return Style(
-      brightness: platformBrightness,
+      brightness: _platformBrightness,
       child: BlocProvider<WorkspaceCubit>(
         create: (_) => WorkspaceCubit(
-          loadWorkspaceSession: loadWorkspaceSession,
-          addLocalRepository: addLocalRepository,
-          openRepositoryTab: openRepositoryTab,
-          closeRepositoryTab: closeRepositoryTab,
-          selectRepositoryTab: selectRepositoryTab,
-          loadRepositoryWorkspace: loadRepositoryWorkspace,
-          loadRepositoryTreeChildren: loadRepositoryTreeChildren,
-          localRepositoryPicker: localRepositoryPicker,
+          loadWorkspaceSession: widget.loadWorkspaceSession,
+          addLocalRepository: widget.addLocalRepository,
+          openRepositoryTab: widget.openRepositoryTab,
+          closeRepositoryTab: widget.closeRepositoryTab,
+          selectRepositoryTab: widget.selectRepositoryTab,
+          loadRepositoryWorkspace: widget.loadRepositoryWorkspace,
+          loadRepositoryTreeChildren: widget.loadRepositoryTreeChildren,
+          localRepositoryPicker: widget.localRepositoryPicker,
         )..initialize(),
         child: MaterialApp(
           title: 'Git Pilot',
           debugShowCheckedModeBanner: false,
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData(
             brightness: Brightness.light,
             scaffoldBackgroundColor: Colors.white,
