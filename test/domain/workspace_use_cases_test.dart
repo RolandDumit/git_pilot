@@ -81,6 +81,93 @@ void main() {
         expect(session.selectedRepositoryId, firstRepository.id);
       },
     );
+
+    test(
+      'load repository workspace prefers upstream branch and returns recent commits',
+      () async {
+        const SavedRepository repository = SavedRepository(
+          rootPath: '/repos/git_pilot',
+          displayName: 'git_pilot',
+        );
+        final _FakeGitRepositoryExplorer explorer = _FakeGitRepositoryExplorer(
+          currentBranchContextByRepositoryId: <String, CurrentBranchContext>{
+            repository.id: const CurrentBranchContext(
+              localBranchName: 'main',
+              upstreamBranchName: 'origin/main',
+            ),
+          },
+          remoteBranchesByRepositoryId: <String, List<RemoteBranchRef>>{
+            repository.id: <RemoteBranchRef>[
+              RemoteBranchRef(name: 'origin/develop'),
+              RemoteBranchRef(name: 'origin/main'),
+            ],
+          },
+          recentCommitsByRepositoryId: <String, List<CommitSummary>>{
+            repository.id: <CommitSummary>[
+              CommitSummary(
+                hash: 'abcdef1234567890',
+                authorName: 'Ada Lovelace',
+                committedAt: DateTime.parse('2026-04-01T10:30:00Z'),
+                subject: 'Initial commit',
+              ),
+            ],
+          },
+        );
+
+        final LoadRepositoryWorkspace loadRepositoryWorkspace =
+            LoadRepositoryWorkspace(explorer);
+
+        final Result<RepositoryWorkspaceSnapshot> result =
+            await loadRepositoryWorkspace(repository);
+
+        expect(result, isA<Success<RepositoryWorkspaceSnapshot>>());
+
+        final RepositoryWorkspaceSnapshot snapshot =
+            (result as Success<RepositoryWorkspaceSnapshot>).data;
+
+        expect(snapshot.selectedRemoteBranchName, 'origin/main');
+        expect(snapshot.currentBranchContext.localBranchName, 'main');
+        expect(snapshot.recentCommits.single.subject, 'Initial commit');
+      },
+    );
+
+    test(
+      'load repository workspace falls back to origin branch when upstream is missing',
+      () async {
+        const SavedRepository repository = SavedRepository(
+          rootPath: '/repos/git_pilot',
+          displayName: 'git_pilot',
+        );
+        final _FakeGitRepositoryExplorer explorer = _FakeGitRepositoryExplorer(
+          currentBranchContextByRepositoryId: <String, CurrentBranchContext>{
+            repository.id: const CurrentBranchContext(
+              localBranchName: 'release',
+              upstreamBranchName: null,
+            ),
+          },
+          remoteBranchesByRepositoryId: <String, List<RemoteBranchRef>>{
+            repository.id: <RemoteBranchRef>[
+              RemoteBranchRef(name: 'upstream/release'),
+              RemoteBranchRef(name: 'origin/release'),
+            ],
+          },
+        );
+
+        final LoadRepositoryWorkspace loadRepositoryWorkspace =
+            LoadRepositoryWorkspace(explorer);
+
+        final Result<RepositoryWorkspaceSnapshot> result =
+            await loadRepositoryWorkspace(repository);
+
+        expect(result, isA<Success<RepositoryWorkspaceSnapshot>>());
+        expect(
+          (result as Success<RepositoryWorkspaceSnapshot>)
+              .data
+              .selectedRemoteBranchName,
+          'origin/release',
+        );
+      },
+    );
   });
 }
 
@@ -106,15 +193,44 @@ final class _InMemoryWorkspaceSessionRepository
 final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
   _FakeGitRepositoryExplorer({
     this.resolvedRepositoriesByInputPath = const <String, SavedRepository>{},
+    this.remoteBranchesByRepositoryId = const <String, List<RemoteBranchRef>>{},
+    this.currentBranchContextByRepositoryId =
+        const <String, CurrentBranchContext>{},
+    this.recentCommitsByRepositoryId = const <String, List<CommitSummary>>{},
   });
 
   final Map<String, SavedRepository> resolvedRepositoriesByInputPath;
+  final Map<String, List<RemoteBranchRef>> remoteBranchesByRepositoryId;
+  final Map<String, CurrentBranchContext> currentBranchContextByRepositoryId;
+  final Map<String, List<CommitSummary>> recentCommitsByRepositoryId;
 
   @override
   Future<Result<List<RemoteBranchRef>>> loadRemoteBranches(
     SavedRepository repository,
   ) async {
-    return const Success<List<RemoteBranchRef>>(<RemoteBranchRef>[]);
+    return Success<List<RemoteBranchRef>>(
+      remoteBranchesByRepositoryId[repository.id] ?? const <RemoteBranchRef>[],
+    );
+  }
+
+  @override
+  Future<Result<CurrentBranchContext>> loadCurrentBranchContext(
+    SavedRepository repository,
+  ) async {
+    return Success<CurrentBranchContext>(
+      currentBranchContextByRepositoryId[repository.id] ??
+          const CurrentBranchContext(localBranchName: null),
+    );
+  }
+
+  @override
+  Future<Result<List<CommitSummary>>> loadRecentCommits(
+    SavedRepository repository, {
+    int limit = 50,
+  }) async {
+    return Success<List<CommitSummary>>(
+      recentCommitsByRepositoryId[repository.id] ?? const <CommitSummary>[],
+    );
   }
 
   @override

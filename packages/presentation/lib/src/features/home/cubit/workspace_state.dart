@@ -85,19 +85,17 @@ class RepositoryTabState {
   const RepositoryTabState({
     this.status = RepositoryTabStatus.initial,
     this.remoteBranches = const <RemoteBranchRef>[],
-    this.rootNodes = const <RepositoryTreeNode>[],
-    this.childNodesByParentPath = const <String, List<RepositoryTreeNode>>{},
-    this.expandedDirectoryPaths = const <String>[],
-    this.loadingDirectoryPaths = const <String>[],
+    this.currentLocalBranchName,
+    this.selectedRemoteBranchName,
+    this.recentCommits = const <CommitSummary>[],
     this.errorMessage,
   });
 
   final RepositoryTabStatus status;
   final List<RemoteBranchRef> remoteBranches;
-  final List<RepositoryTreeNode> rootNodes;
-  final Map<String, List<RepositoryTreeNode>> childNodesByParentPath;
-  final List<String> expandedDirectoryPaths;
-  final List<String> loadingDirectoryPaths;
+  final String? currentLocalBranchName;
+  final String? selectedRemoteBranchName;
+  final List<CommitSummary> recentCommits;
   final String? errorMessage;
 
   bool get isLoading => status == RepositoryTabStatus.loading;
@@ -106,22 +104,23 @@ class RepositoryTabState {
   RepositoryTabState copyWith({
     RepositoryTabStatus? status,
     List<RemoteBranchRef>? remoteBranches,
-    List<RepositoryTreeNode>? rootNodes,
-    Map<String, List<RepositoryTreeNode>>? childNodesByParentPath,
-    List<String>? expandedDirectoryPaths,
-    List<String>? loadingDirectoryPaths,
+    Object? currentLocalBranchName = _workspaceStateSentinel,
+    Object? selectedRemoteBranchName = _workspaceStateSentinel,
+    List<CommitSummary>? recentCommits,
     Object? errorMessage = _workspaceStateSentinel,
   }) {
     return RepositoryTabState(
       status: status ?? this.status,
       remoteBranches: remoteBranches ?? this.remoteBranches,
-      rootNodes: rootNodes ?? this.rootNodes,
-      childNodesByParentPath:
-          childNodesByParentPath ?? this.childNodesByParentPath,
-      expandedDirectoryPaths:
-          expandedDirectoryPaths ?? this.expandedDirectoryPaths,
-      loadingDirectoryPaths:
-          loadingDirectoryPaths ?? this.loadingDirectoryPaths,
+      currentLocalBranchName:
+          identical(currentLocalBranchName, _workspaceStateSentinel)
+          ? this.currentLocalBranchName
+          : currentLocalBranchName as String?,
+      selectedRemoteBranchName:
+          identical(selectedRemoteBranchName, _workspaceStateSentinel)
+          ? this.selectedRemoteBranchName
+          : selectedRemoteBranchName as String?,
+      recentCommits: recentCommits ?? this.recentCommits,
       errorMessage: identical(errorMessage, _workspaceStateSentinel)
           ? this.errorMessage
           : errorMessage as String?,

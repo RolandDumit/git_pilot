@@ -1,5 +1,7 @@
 export 'src/datasources/git_command_runner.dart';
+export 'src/datasources/git_current_branch_data_source.dart';
 export 'src/datasources/git_remote_branches_data_source.dart';
+export 'src/datasources/git_recent_commits_data_source.dart';
 export 'src/datasources/git_repository_resolver_data_source.dart';
 export 'src/datasources/repository_file_tree_data_source.dart';
 export 'src/datasources/workspace_session_local_data_source.dart';

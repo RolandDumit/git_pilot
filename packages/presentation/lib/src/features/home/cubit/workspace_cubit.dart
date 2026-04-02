@@ -13,7 +13,6 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
     required CloseRepositoryTab closeRepositoryTab,
     required SelectRepositoryTab selectRepositoryTab,
     required LoadRepositoryWorkspace loadRepositoryWorkspace,
-    required LoadRepositoryTreeChildren loadRepositoryTreeChildren,
     required LocalRepositoryPicker localRepositoryPicker,
   }) : _loadWorkspaceSession = loadWorkspaceSession,
        _addLocalRepository = addLocalRepository,
@@ -21,7 +20,6 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
        _closeRepositoryTab = closeRepositoryTab,
        _selectRepositoryTab = selectRepositoryTab,
        _loadRepositoryWorkspace = loadRepositoryWorkspace,
-       _loadRepositoryTreeChildren = loadRepositoryTreeChildren,
        _localRepositoryPicker = localRepositoryPicker,
        super(const WorkspaceState());
 
@@ -31,7 +29,6 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
   final CloseRepositoryTab _closeRepositoryTab;
   final SelectRepositoryTab _selectRepositoryTab;
   final LoadRepositoryWorkspace _loadRepositoryWorkspace;
-  final LoadRepositoryTreeChildren _loadRepositoryTreeChildren;
   final LocalRepositoryPicker _localRepositoryPicker;
 
   Future<void> initialize() async {
@@ -117,10 +114,9 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
     await _handleSessionMutationResult(sessionResult);
   }
 
-  Future<void> toggleDirectory(RepositoryTreeNode node) async {
+  void selectRemoteBranch(String branchName) {
     final SavedRepository? selectedRepository = state.selectedRepository;
-
-    if (selectedRepository == null || !node.isDirectory || !node.hasChildren) {
+    if (selectedRepository == null) {
       return;
     }
 
@@ -128,103 +124,11 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
         state.selectedTabState ??
         const RepositoryTabState(status: RepositoryTabStatus.initial);
 
-    if (tabState.expandedDirectoryPaths.contains(node.relativePath)) {
-      emit(
-        state.copyWith(
-          tabsByRepositoryId: _updatedTabState(
-            selectedRepository.id,
-            tabState.copyWith(
-              expandedDirectoryPaths: tabState.expandedDirectoryPaths
-                  .where((String path) => path != node.relativePath)
-                  .toList(growable: false),
-            ),
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (tabState.childNodesByParentPath.containsKey(node.relativePath)) {
-      emit(
-        state.copyWith(
-          tabsByRepositoryId: _updatedTabState(
-            selectedRepository.id,
-            tabState.copyWith(
-              expandedDirectoryPaths: <String>[
-                ...tabState.expandedDirectoryPaths,
-                node.relativePath,
-              ],
-            ),
-          ),
-        ),
-      );
-      return;
-    }
-
     emit(
       state.copyWith(
         tabsByRepositoryId: _updatedTabState(
           selectedRepository.id,
-          tabState.copyWith(
-            loadingDirectoryPaths: <String>[
-              ...tabState.loadingDirectoryPaths,
-              node.relativePath,
-            ],
-          ),
-        ),
-      ),
-    );
-
-    final Result<List<RepositoryTreeNode>> treeChildrenResult =
-        await _loadRepositoryTreeChildren(
-          selectedRepository,
-          relativePath: node.relativePath,
-        );
-
-    final RepositoryTabState latestTabState =
-        state.tabsByRepositoryId[selectedRepository.id] ?? tabState;
-
-    if (treeChildrenResult is FailureResult<List<RepositoryTreeNode>>) {
-      emit(
-        state.copyWith(
-          message: WorkspaceMessage(
-            text: treeChildrenResult.failure.message,
-            kind: WorkspaceMessageKind.error,
-          ),
-          tabsByRepositoryId: _updatedTabState(
-            selectedRepository.id,
-            latestTabState.copyWith(
-              loadingDirectoryPaths: latestTabState.loadingDirectoryPaths
-                  .where((String path) => path != node.relativePath)
-                  .toList(growable: false),
-              errorMessage: treeChildrenResult.failure.message,
-            ),
-          ),
-        ),
-      );
-      return;
-    }
-
-    emit(
-      state.copyWith(
-        tabsByRepositoryId: _updatedTabState(
-          selectedRepository.id,
-          latestTabState.copyWith(
-            loadingDirectoryPaths: latestTabState.loadingDirectoryPaths
-                .where((String path) => path != node.relativePath)
-                .toList(growable: false),
-            expandedDirectoryPaths: <String>[
-              ...latestTabState.expandedDirectoryPaths,
-              node.relativePath,
-            ],
-            childNodesByParentPath: <String, List<RepositoryTreeNode>>{
-              ...latestTabState.childNodesByParentPath,
-              node.relativePath:
-                  (treeChildrenResult as Success<List<RepositoryTreeNode>>)
-                      .data,
-            },
-            errorMessage: null,
-          ),
+          tabState.copyWith(selectedRemoteBranchName: branchName),
         ),
       ),
     );
@@ -318,7 +222,10 @@ class WorkspaceCubit extends Cubit<WorkspaceState> {
           RepositoryTabState(
             status: RepositoryTabStatus.success,
             remoteBranches: snapshot.remoteBranches,
-            rootNodes: snapshot.rootNodes,
+            currentLocalBranchName:
+                snapshot.currentBranchContext.localBranchName,
+            selectedRemoteBranchName: snapshot.selectedRemoteBranchName,
+            recentCommits: snapshot.recentCommits,
           ),
         ),
       ),

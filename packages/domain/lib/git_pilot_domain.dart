@@ -1,5 +1,7 @@
 export 'package:git_pilot_core/git_pilot_core.dart';
 
+export 'src/entities/commit_summary.dart';
+export 'src/entities/current_branch_context.dart';
 export 'src/entities/remote_branch_ref.dart';
 export 'src/entities/repository_tree_node.dart';
 export 'src/entities/repository_workspace_snapshot.dart';

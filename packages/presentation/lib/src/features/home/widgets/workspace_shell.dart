@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
 import 'package:git_pilot_presentation/style.dart';
@@ -33,7 +32,8 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
   double _branchesPanelHeight = _defaultBranchesPanelHeight;
 
   double _clampBranchesPanelWidth(double width, double availableWidth) {
-    final double maxWidth = availableWidth - _separatorWidth - _minTreePanelWidth;
+    final double maxWidth =
+        availableWidth - _separatorWidth - _minTreePanelWidth;
 
     if (maxWidth <= _minBranchesPanelWidth) {
       return availableWidth / 2;
@@ -43,7 +43,8 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
   }
 
   double _clampBranchesPanelHeight(double height, double availableHeight) {
-    final double maxHeight = availableHeight - _separatorWidth - _minTreePanelHeight;
+    final double maxHeight =
+        availableHeight - _separatorWidth - _minTreePanelHeight;
 
     if (maxHeight <= _minBranchesPanelHeight) {
       return availableHeight / 2;
@@ -57,31 +58,41 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
     final WorkspaceCubit cubit = context.read<WorkspaceCubit>();
     final WorkspaceState state = widget.state;
     final SavedRepository? selectedRepository = state.selectedRepository;
-    final RepositoryTabState selectedTabState = state.selectedTabState ?? const RepositoryTabState();
+    final RepositoryTabState selectedTabState =
+        state.selectedTabState ?? const RepositoryTabState();
 
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (state.message != null) ...[const SizedBox(height: 16), WorkspaceMessageBanner(message: state.message!)],
+          if (state.message != null) ...[
+            const SizedBox(height: 16),
+            WorkspaceMessageBanner(message: state.message!),
+          ],
           const SizedBox(height: 4),
           RepositoryTabBar(state: state),
           const SizedBox(height: 4),
           Expanded(
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-                final bool stackPanels = constraints.maxWidth < Style.breakpoints.desktop * 2;
+                final bool stackPanels =
+                    constraints.maxWidth < Style.breakpoints.desktop * 2;
                 final Style style = Style.of(context);
 
                 final Widget branchesPanel = WorkspacePanel(
                   title: 'Remote branches',
-                  child: RemoteBranchesPanel(tabState: selectedTabState),
+                  child: RemoteBranchesPanel(
+                    tabState: selectedTabState,
+                    onSelectBranch: cubit.selectRemoteBranch,
+                  ),
                 );
 
                 final Widget treePanel = WorkspacePanel(
-                  title: selectedRepository == null ? 'Git tree' : 'Git tree (${selectedRepository.displayName})',
-                  child: RepositoryTreePanel(tabState: selectedTabState, onToggleDirectory: cubit.toggleDirectory),
+                  title: selectedRepository == null
+                      ? 'Recent commits'
+                      : 'Recent commits (${selectedRepository.displayName})',
+                  child: RepositoryTreePanel(tabState: selectedTabState),
                 );
 
                 if (stackPanels) {
@@ -92,7 +103,10 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
 
                   return Column(
                     children: [
-                      SizedBox(height: branchesPanelHeight, child: branchesPanel),
+                      SizedBox(
+                        height: branchesPanelHeight,
+                        child: branchesPanel,
+                      ),
                       MouseRegion(
                         cursor: SystemMouseCursors.resizeRow,
                         child: GestureDetector(
@@ -112,7 +126,9 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
                                 height: 2,
                                 decoration: BoxDecoration(
                                   color: style.colors.border,
-                                  borderRadius: BorderRadius.circular(Style.radii.small),
+                                  borderRadius: BorderRadius.circular(
+                                    Style.radii.small,
+                                  ),
                                 ),
                               ),
                             ),
@@ -124,7 +140,10 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
                   );
                 }
 
-                final double branchesPanelWidth = _clampBranchesPanelWidth(_branchesPanelWidth, constraints.maxWidth);
+                final double branchesPanelWidth = _clampBranchesPanelWidth(
+                  _branchesPanelWidth,
+                  constraints.maxWidth,
+                );
 
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,7 +168,9 @@ class _WorkspaceShellState extends State<WorkspaceShell> {
                               width: 2,
                               decoration: BoxDecoration(
                                 color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(Style.radii.small),
+                                borderRadius: BorderRadius.circular(
+                                  Style.radii.small,
+                                ),
                               ),
                             ),
                           ),

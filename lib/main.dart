@@ -22,7 +22,13 @@ Future<void> main() async {
         repositoryResolverDataSource: GitRepositoryResolverDataSource(
           commandRunner: commandRunner,
         ),
+        currentBranchDataSource: GitCurrentBranchDataSource(
+          commandRunner: commandRunner,
+        ),
         remoteBranchesDataSource: GitRemoteBranchesDataSource(
+          commandRunner: commandRunner,
+        ),
+        recentCommitsDataSource: GitRecentCommitsDataSource(
           commandRunner: commandRunner,
         ),
         repositoryFileTreeDataSource: const RepositoryFileTreeDataSource(),
@@ -39,9 +45,6 @@ Future<void> main() async {
       closeRepositoryTab: CloseRepositoryTab(workspaceSessionRepository),
       selectRepositoryTab: SelectRepositoryTab(workspaceSessionRepository),
       loadRepositoryWorkspace: LoadRepositoryWorkspace(gitRepositoryExplorer),
-      loadRepositoryTreeChildren: LoadRepositoryTreeChildren(
-        gitRepositoryExplorer,
-      ),
       localRepositoryPicker: const _FileSelectorLocalRepositoryPicker(),
     ),
   );

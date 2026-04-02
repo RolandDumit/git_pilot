@@ -13,6 +13,7 @@ class Tile extends StatefulWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final TileVariant variant;
+  final bool isSelected;
 
   const Tile({
     super.key,
@@ -22,6 +23,7 @@ class Tile extends StatefulWidget {
     this.trailing,
     this.onTap,
     this.variant = TileVariant.simple,
+    this.isSelected = false,
   });
 
   @override
@@ -39,7 +41,8 @@ class _TileState extends State<Tile> {
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent &&
-        (event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.enter)) {
+        (event.logicalKey == LogicalKeyboardKey.space ||
+            event.logicalKey == LogicalKeyboardKey.enter)) {
       _handleTap();
 
       return KeyEventResult.handled;
@@ -65,10 +68,23 @@ class _TileState extends State<Tile> {
       ),
     };
 
+    if (widget.isSelected) {
+      decoration = decoration.copyWith(
+        color: colors.navigation.railItemBackgroundActive,
+        border: Border.all(color: colors.accent, width: 1),
+        borderRadius: BorderRadius.circular(Style.radii.medium),
+      );
+    }
+
     // Focus ring
     if (_isFocused && !_isDisabled) {
       decoration = decoration.copyWith(
-        boxShadow: [BoxShadow(color: colors.accent.withValues(alpha: 0.4), spreadRadius: 2)],
+        boxShadow: [
+          BoxShadow(
+            color: colors.accent.withValues(alpha: 0.4),
+            spreadRadius: 2,
+          ),
+        ],
       );
     }
 
@@ -83,7 +99,9 @@ class _TileState extends State<Tile> {
         },
         onKeyEvent: _isDisabled ? null : _handleKeyEvent,
         child: MouseRegion(
-          cursor: _isDisabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+          cursor: _isDisabled
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.click,
           child: GestureDetector(
             onTap: _isDisabled ? null : _handleTap,
             behavior: HitTestBehavior.translucent,
@@ -92,7 +110,10 @@ class _TileState extends State<Tile> {
               decoration: decoration,
               child: Row(
                 children: [
-                  if (widget.leading != null) ...[widget.leading!, const SizedBox(width: 12)],
+                  if (widget.leading != null) ...[
+                    widget.leading!,
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +130,10 @@ class _TileState extends State<Tile> {
                       ],
                     ),
                   ),
-                  if (widget.trailing != null) ...[const SizedBox(width: 16), widget.trailing!],
+                  if (widget.trailing != null) ...[
+                    const SizedBox(width: 16),
+                    widget.trailing!,
+                  ],
                 ],
               ),
             ),

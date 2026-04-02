@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:git_pilot_domain/git_pilot_domain.dart';
 import 'package:git_pilot_presentation/git_pilot_presentation.dart';
@@ -49,7 +50,7 @@ void main() {
       },
     );
 
-    testWidgets('restored open tabs show the tabbed workspace and split view', (
+    testWidgets('restored open tabs show branches and recent commits', (
       WidgetTester tester,
     ) async {
       const SavedRepository repository = SavedRepository(
@@ -73,9 +74,41 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Remote branches'), findsOneWidget);
-      expect(find.text('origin/main'), findsOneWidget);
-      expect(find.textContaining('Git tree'), findsOneWidget);
-      expect(find.text('lib'), findsOneWidget);
+      expect(find.text('origin/main'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Recent commits'), findsOneWidget);
+      expect(find.text('Initial commit'), findsOneWidget);
+      expect(find.text('Checked out locally: main'), findsOneWidget);
+    });
+
+    testWidgets('tapping a branch updates the highlighted selection', (
+      WidgetTester tester,
+    ) async {
+      const SavedRepository repository = SavedRepository(
+        rootPath: '/repos/git_pilot',
+        displayName: 'git_pilot',
+      );
+
+      await tester.pumpWidget(
+        _buildApp(
+          sessionRepository: _InMemoryWorkspaceSessionRepository(
+            session: WorkspaceSession(
+              savedRepositories: <SavedRepository>[repository],
+              openRepositoryIds: <String>[repository.id],
+              selectedRepositoryId: repository.id,
+            ),
+          ),
+          explorer: _FakeGitRepositoryExplorer(resolvedRepository: repository),
+          picker: _FakeLocalRepositoryPicker(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(_selectedTileTitles(tester), <String>['origin/main']);
+
+      await tester.tap(find.text('origin/release'));
+      await tester.pumpAndSettle();
+
+      expect(_selectedTileTitles(tester), <String>['origin/release']);
     });
   });
 }
@@ -92,7 +125,6 @@ GitPilotApp _buildApp({
     closeRepositoryTab: CloseRepositoryTab(sessionRepository),
     selectRepositoryTab: SelectRepositoryTab(sessionRepository),
     loadRepositoryWorkspace: LoadRepositoryWorkspace(explorer),
-    loadRepositoryTreeChildren: LoadRepositoryTreeChildren(explorer),
     localRepositoryPicker: picker,
   );
 }
@@ -117,9 +149,22 @@ final class _InMemoryWorkspaceSessionRepository
 }
 
 final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
-  _FakeGitRepositoryExplorer({this.resolvedRepository});
+  _FakeGitRepositoryExplorer({
+    this.resolvedRepository,
+    List<CommitSummary>? recentCommits,
+  }) : recentCommits =
+           recentCommits ??
+           <CommitSummary>[
+             CommitSummary(
+               hash: 'abcdef1234567890',
+               authorName: 'Ada Lovelace',
+               committedAt: DateTime.utc(2026, 4, 1, 10, 30),
+               subject: 'Initial commit',
+             ),
+           ];
 
   final SavedRepository? resolvedRepository;
+  final List<CommitSummary> recentCommits;
 
   @override
   Future<Result<List<RemoteBranchRef>>> loadRemoteBranches(
@@ -129,6 +174,26 @@ final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
       RemoteBranchRef(name: 'origin/main'),
       RemoteBranchRef(name: 'origin/release'),
     ]);
+  }
+
+  @override
+  Future<Result<CurrentBranchContext>> loadCurrentBranchContext(
+    SavedRepository repository,
+  ) async {
+    return const Success<CurrentBranchContext>(
+      CurrentBranchContext(
+        localBranchName: 'main',
+        upstreamBranchName: 'origin/main',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<List<CommitSummary>>> loadRecentCommits(
+    SavedRepository repository, {
+    int limit = 50,
+  }) async {
+    return Success<List<CommitSummary>>(recentCommits);
   }
 
   @override
@@ -147,25 +212,7 @@ final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
     SavedRepository repository, {
     String? relativePath,
   }) async {
-    if (relativePath == null) {
-      return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[
-        RepositoryTreeNode(
-          name: 'lib',
-          relativePath: 'lib',
-          isDirectory: true,
-          hasChildren: true,
-        ),
-      ]);
-    }
-
-    return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[
-      RepositoryTreeNode(
-        name: 'main.dart',
-        relativePath: 'lib/main.dart',
-        isDirectory: false,
-        hasChildren: false,
-      ),
-    ]);
+    return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[]);
   }
 }
 
@@ -174,4 +221,22 @@ final class _FakeLocalRepositoryPicker implements LocalRepositoryPicker {
   Future<String?> pickDirectory() async {
     return null;
   }
+}
+
+List<String> _selectedTileTitles(WidgetTester tester) {
+  return find
+      .byWidgetPredicate((Widget widget) {
+        if (widget.runtimeType.toString() != 'Tile') {
+          return false;
+        }
+
+        final dynamic tile = widget;
+        return tile.isSelected == true;
+      })
+      .evaluate()
+      .map<String>((Element element) {
+        final dynamic tile = element.widget;
+        return tile.title as String;
+      })
+      .toList(growable: false);
 }

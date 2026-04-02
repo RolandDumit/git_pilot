@@ -16,7 +16,6 @@ class GitPilotApp extends StatefulWidget {
     required this.closeRepositoryTab,
     required this.selectRepositoryTab,
     required this.loadRepositoryWorkspace,
-    required this.loadRepositoryTreeChildren,
     required this.localRepositoryPicker,
   });
 
@@ -26,7 +25,6 @@ class GitPilotApp extends StatefulWidget {
   final CloseRepositoryTab closeRepositoryTab;
   final SelectRepositoryTab selectRepositoryTab;
   final LoadRepositoryWorkspace loadRepositoryWorkspace;
-  final LoadRepositoryTreeChildren loadRepositoryTreeChildren;
   final LocalRepositoryPicker localRepositoryPicker;
 
   @override
@@ -78,7 +76,6 @@ class _GitPilotAppState extends State<GitPilotApp> with WidgetsBindingObserver {
           closeRepositoryTab: widget.closeRepositoryTab,
           selectRepositoryTab: widget.selectRepositoryTab,
           loadRepositoryWorkspace: widget.loadRepositoryWorkspace,
-          loadRepositoryTreeChildren: widget.loadRepositoryTreeChildren,
           localRepositoryPicker: widget.localRepositoryPicker,
         )..initialize(),
         child: MaterialApp(

@@ -29,7 +29,6 @@ void main() {
           closeRepositoryTab: CloseRepositoryTab(sessionRepository),
           selectRepositoryTab: SelectRepositoryTab(sessionRepository),
           loadRepositoryWorkspace: LoadRepositoryWorkspace(explorer),
-          loadRepositoryTreeChildren: LoadRepositoryTreeChildren(explorer),
           localRepositoryPicker: _FakeLocalRepositoryPicker(
             selectedPaths: <String>[repository.id],
           ),
@@ -61,7 +60,6 @@ void main() {
           closeRepositoryTab: CloseRepositoryTab(sessionRepository),
           selectRepositoryTab: SelectRepositoryTab(sessionRepository),
           loadRepositoryWorkspace: LoadRepositoryWorkspace(explorer),
-          loadRepositoryTreeChildren: LoadRepositoryTreeChildren(explorer),
           localRepositoryPicker: _FakeLocalRepositoryPicker(
             selectedPaths: <String>['/invalid/repo'],
           ),
@@ -76,6 +74,60 @@ void main() {
           'The selected folder is not a Git repository.',
         );
         expect(cubit.state.mode, WorkspaceViewMode.emptyOnboarding);
+      },
+    );
+
+    test(
+      'initialization seeds the selected remote branch and allows manual selection',
+      () async {
+        const SavedRepository repository = SavedRepository(
+          rootPath: '/repos/git_pilot',
+          displayName: 'git_pilot',
+        );
+        final _InMemoryWorkspaceSessionRepository sessionRepository =
+            _InMemoryWorkspaceSessionRepository(
+              session: WorkspaceSession(
+                savedRepositories: <SavedRepository>[repository],
+                openRepositoryIds: <String>[repository.id],
+                selectedRepositoryId: repository.id,
+              ),
+            );
+        final _FakeGitRepositoryExplorer explorer = _FakeGitRepositoryExplorer(
+          resolvedRepository: repository,
+          currentBranchContext: const CurrentBranchContext(
+            localBranchName: 'main',
+            upstreamBranchName: 'origin/main',
+          ),
+          remoteBranches: const <RemoteBranchRef>[
+            RemoteBranchRef(name: 'origin/main'),
+            RemoteBranchRef(name: 'origin/release'),
+          ],
+        );
+        final WorkspaceCubit cubit = WorkspaceCubit(
+          loadWorkspaceSession: LoadWorkspaceSession(sessionRepository),
+          addLocalRepository: AddLocalRepository(sessionRepository, explorer),
+          openRepositoryTab: OpenRepositoryTab(sessionRepository),
+          closeRepositoryTab: CloseRepositoryTab(sessionRepository),
+          selectRepositoryTab: SelectRepositoryTab(sessionRepository),
+          loadRepositoryWorkspace: LoadRepositoryWorkspace(explorer),
+          localRepositoryPicker: _FakeLocalRepositoryPicker(
+            selectedPaths: const <String>[],
+          ),
+        );
+
+        await cubit.initialize();
+
+        expect(
+          cubit.state.selectedTabState?.selectedRemoteBranchName,
+          'origin/main',
+        );
+
+        cubit.selectRemoteBranch('origin/release');
+
+        expect(
+          cubit.state.selectedTabState?.selectedRemoteBranchName,
+          'origin/release',
+        );
       },
     );
   });
@@ -101,18 +153,54 @@ final class _InMemoryWorkspaceSessionRepository
 }
 
 final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
-  _FakeGitRepositoryExplorer({this.resolvedRepository, this.resolutionFailure});
+  _FakeGitRepositoryExplorer({
+    this.resolvedRepository,
+    this.resolutionFailure,
+    this.currentBranchContext = const CurrentBranchContext(
+      localBranchName: 'main',
+      upstreamBranchName: 'origin/main',
+    ),
+    this.remoteBranches = const <RemoteBranchRef>[
+      RemoteBranchRef(name: 'origin/main'),
+    ],
+    List<CommitSummary>? recentCommits,
+  }) : recentCommits =
+           recentCommits ??
+           <CommitSummary>[
+             CommitSummary(
+               hash: 'abcdef1234567890',
+               authorName: 'Ada Lovelace',
+               committedAt: DateTime.utc(2026, 4, 1, 10, 30),
+               subject: 'Initial commit',
+             ),
+           ];
 
   final SavedRepository? resolvedRepository;
   final Failure? resolutionFailure;
+  final CurrentBranchContext currentBranchContext;
+  final List<RemoteBranchRef> remoteBranches;
+  final List<CommitSummary> recentCommits;
 
   @override
   Future<Result<List<RemoteBranchRef>>> loadRemoteBranches(
     SavedRepository repository,
   ) async {
-    return const Success<List<RemoteBranchRef>>(<RemoteBranchRef>[
-      RemoteBranchRef(name: 'origin/main'),
-    ]);
+    return Success<List<RemoteBranchRef>>(remoteBranches);
+  }
+
+  @override
+  Future<Result<CurrentBranchContext>> loadCurrentBranchContext(
+    SavedRepository repository,
+  ) async {
+    return Success<CurrentBranchContext>(currentBranchContext);
+  }
+
+  @override
+  Future<Result<List<CommitSummary>>> loadRecentCommits(
+    SavedRepository repository, {
+    int limit = 50,
+  }) async {
+    return Success<List<CommitSummary>>(recentCommits);
   }
 
   @override
@@ -129,25 +217,7 @@ final class _FakeGitRepositoryExplorer implements GitRepositoryExplorer {
     SavedRepository repository, {
     String? relativePath,
   }) async {
-    if (relativePath == null) {
-      return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[
-        RepositoryTreeNode(
-          name: 'lib',
-          relativePath: 'lib',
-          isDirectory: true,
-          hasChildren: true,
-        ),
-      ]);
-    }
-
-    return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[
-      RepositoryTreeNode(
-        name: 'main.dart',
-        relativePath: 'lib/main.dart',
-        isDirectory: false,
-        hasChildren: false,
-      ),
-    ]);
+    return const Success<List<RepositoryTreeNode>>(<RepositoryTreeNode>[]);
   }
 }
 
